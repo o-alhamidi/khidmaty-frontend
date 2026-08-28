@@ -1,0 +1,180 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// المستخدمون (مكمل لـ Supabase Auth)
+model Profile {
+  id            String    @id @default(uuid())
+  userId        String    @unique // رابط مع Supabase Auth user id
+  email         String    @unique
+  fullName      String
+  phone         String?
+  avatarUrl     String?
+  role          Role      @default(CUSTOMER)
+  status        Status    @default(ACTIVE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  provider      Provider?
+  bookings      Booking[] @relation("CustomerBookings")
+  reviews       Review[]
+  notifications Notification[]
+}
+
+model Provider {
+  id              String   @id @default(uuid())
+  profileId       String   @unique
+  profile         Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  specialization  String
+  location        String
+  experience      String   // 0-2, 2-5, 5-10, 10+
+  certifications  String?
+  bio             String?  @db.Text
+  rating          Float    @default(0)
+  reviewCount     Int      @default(0)
+  earnings        Float    @default(0)
+  jobCount        Int      @default(0)
+  verified        Boolean  @default(false)
+  status          ProviderStatus @default(PENDING)
+  createdAt       DateTime @default(now())
+
+  services        Service[]
+  bookings        Booking[] @relation("ProviderBookings")
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  nameAr      String
+  icon        String?
+  description String?
+  featured    Boolean   @default(false)
+  status      Status    @default(ACTIVE)
+  createdAt   DateTime  @default(now())
+
+  services    Service[]
+}
+
+model Service {
+  id          String   @id @default(uuid())
+  title       String
+  description String   @db.Text
+  price       Float
+  priceType   String   @default("fixed") // fixed, hourly
+  images      String[] // URLs
+  status      Status   @default(ACTIVE)
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+
+  providerId  String
+  provider    Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  bookings    Booking[]
+  reviews     Review[]
+}
+
+model Booking {
+  id          String        @id @default(uuid())
+  status      BookingStatus @default(PENDING)
+  date        DateTime
+  time        String
+  address     String
+  notes       String?
+  totalPrice  Float
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  customerId  String
+  customer    Profile       @relation("CustomerBookings", fields: [customerId], references: [id])
+
+  providerId  String
+  provider    Provider      @relation("ProviderBookings", fields: [providerId], references: [id])
+
+  serviceId   String
+  service     Service       @relation(fields: [serviceId], references: [id])
+
+  review      Review?
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int      // 1-5
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+
+  bookingId String   @unique
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  customerId String
+  customer   Profile  @relation(fields: [customerId], references: [id])
+
+  serviceId  String
+  service    Service  @relation(fields: [serviceId], references: [id])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  title     String
+  message   String           @db.Text
+  type      NotificationType @default(SYSTEM)
+  severity  Severity         @default(INFO)
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  userId    String
+  user      Profile          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  CUSTOMER
+  PROVIDER
+  ADMIN
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum ProviderStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  VERIFICATION
+  DISPUTE
+  SYSTEM
+  COMPLIANCE
+  FRAUD
+  BOOKING
+  REVIEW
+}
+
+enum Severity {
+  CRITICAL
+  WARNING
+  INFO
+  SUCCESS
+}
