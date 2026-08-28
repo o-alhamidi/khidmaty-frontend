@@ -4,10 +4,11 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 // PATCH mark as read
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   try {
     const notification = await prisma.notification.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { read: true },
     })
 
@@ -26,10 +27,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 }
 
 // DELETE notification
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   try {
     await prisma.notification.delete({
-      where: { id: params.id },
+      where: { id: id },
     })
 
     return NextResponse.json({

@@ -3,13 +3,14 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   try {
     const body = await req.json()
     const { status } = body
 
     const provider = await prisma.provider.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         status,
         verified: status === 'VERIFIED',
@@ -39,10 +40,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   try {
     await prisma.provider.delete({
-      where: { id: params.id },
+      where: { id: id },
     })
 
     return NextResponse.json({
