@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if email exists
-    const existingUser = await prisma.user.findUnique({ where: { email } })
+    const existingUser = await prisma.profile.findUnique({ where: { email } })
     if (existingUser) {
       return NextResponse.json(
         { success: false, message: 'البريد الإلكتروني مستخدم بالفعل' },
@@ -54,12 +54,12 @@ export async function POST(req: NextRequest) {
           location,
           experience,
           certifications: certifications || '',
-          verificationStatus: 'PENDING',
+          status: 'PENDING',
         },
       }
     }
 
-    const user = await prisma.user.create({
+    const user = await prisma.profile.create({
       data: userData,
       include: { provider: true },
     })

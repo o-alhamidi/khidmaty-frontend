@@ -7,7 +7,7 @@ const prisma = new PrismaClient()
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const notification = await prisma.notification.update({
-      where: { id: parseInt(params.id) },
+      where: { id: params.id },
       data: { read: true },
     })
 
@@ -29,7 +29,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     await prisma.notification.delete({
-      where: { id: parseInt(params.id) },
+      where: { id: params.id },
     })
 
     return NextResponse.json({
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     const { userId } = body
 
     const where: any = { read: false }
-    if (userId) where.userId = parseInt(userId)
+    if (userId) where.userId = userId
 
     await prisma.notification.updateMany({
       where,

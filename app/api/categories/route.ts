@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
       where,
       include: {
         _count: {
-          select: { providers: true, services: true },
+          select: { services: true },
         },
       },
       orderBy: { createdAt: 'desc' },

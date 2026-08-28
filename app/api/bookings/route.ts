@@ -12,8 +12,8 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get('status')
 
     const where: any = {}
-    if (customerId) where.customerId = parseInt(customerId)
-    if (providerId) where.providerId = parseInt(providerId)
+    if (customerId) where.customerId = customerId
+    if (providerId) where.providerId = providerId
     if (status) where.status = status
 
     const bookings = await prisma.booking.findMany({
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
         },
         provider: {
           include: {
-            user: {
+            profile: {
               select: { id: true, fullName: true, email: true, phone: true },
             },
           },
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 
     // Get service price
     const service = await prisma.service.findUnique({
-      where: { id: parseInt(serviceId) },
+      where: { id: serviceId },
     })
 
     if (!service) {
@@ -73,20 +73,19 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const basePrice = service.price || service.duration * 2500
+    const basePrice = service.price || service.price
     const tax = Math.round(basePrice * 0.15)
     const totalPrice = basePrice + tax
 
     const booking = await prisma.booking.create({
       data: {
-        customerId: parseInt(customerId),
-        providerId: parseInt(providerId),
-        serviceId: parseInt(serviceId),
+        customerId: customerId,
+        providerId: providerId,
+        serviceId: serviceId,
         date: new Date(date),
         time,
         address,
         notes: notes || '',
-        basePrice,
         tax,
         totalPrice,
         status: 'PENDING',
@@ -97,7 +96,7 @@ export async function POST(req: NextRequest) {
         },
         provider: {
           include: {
-            user: {
+            profile: {
               select: { id: true, fullName: true, email: true },
             },
           },

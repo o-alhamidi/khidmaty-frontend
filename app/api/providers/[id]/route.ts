@@ -6,16 +6,16 @@ const prisma = new PrismaClient()
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const body = await req.json()
-    const { verificationStatus } = body
+    const { status } = body
 
     const provider = await prisma.provider.update({
-      where: { id: parseInt(params.id) },
+      where: { id: params.id },
       data: {
-        verificationStatus,
-        verified: verificationStatus === 'VERIFIED',
+        status,
+        verified: status === 'VERIFIED',
       },
       include: {
-        user: {
+        profile: {
           select: {
             id: true,
             fullName: true,
@@ -27,7 +27,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     return NextResponse.json({
       success: true,
-      message: verificationStatus === 'VERIFIED' ? 'تم توثيق المزود بنجاح' : 'تم رفض طلب التوثيق',
+      message: status === 'VERIFIED' ? 'تم توثيق المزود بنجاح' : 'تم رفض طلب التوثيق',
       data: provider,
     })
   } catch (error) {
@@ -42,7 +42,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     await prisma.provider.delete({
-      where: { id: parseInt(params.id) },
+      where: { id: params.id },
     })
 
     return NextResponse.json({

@@ -6,8 +6,8 @@ const prisma = new PrismaClient()
 export async function GET(req: NextRequest) {
   try {
     // Get counts
-    const totalUsers = await prisma.user.count()
-    const totalCustomers = await prisma.user.count({ where: { role: 'CUSTOMER' } })
+    const totalUsers = await prisma.profile.count()
+    const totalCustomers = await prisma.profile.count({ where: { role: 'CUSTOMER' } })
     const totalProviders = await prisma.provider.count()
     const totalBookings = await prisma.booking.count()
     const pendingBookings = await prisma.booking.count({ where: { status: 'PENDING' } })
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
       where: { status: 'COMPLETED' },
       _sum: { totalPrice: true },
     })
-    const pendingVerifications = await prisma.provider.count({ where: { verificationStatus: 'PENDING' } })
+    const pendingVerifications = await prisma.provider.count({ where: { status: 'PENDING' } })
 
     // Get monthly revenue
     const now = new Date()
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
       take: 5,
       orderBy: { earnings: 'desc' },
       include: {
-        user: {
+        profile: {
           select: { fullName: true, email: true },
         },
       },

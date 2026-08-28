@@ -9,11 +9,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const { status } = body
 
     const booking = await prisma.booking.update({
-      where: { id: parseInt(params.id) },
+      where: { id: params.id },
       data: { status },
       include: {
         customer: { select: { id: true, fullName: true } },
-        provider: { include: { user: { select: { id: true, fullName: true } } } },
+        provider: { include: { profile: { select: { id: true, fullName: true } } } },
         service: true,
       },
     })

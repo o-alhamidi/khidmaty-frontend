@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     if (status) where.status = status
     if (role) where.role = role
 
-    const users = await prisma.user.findMany({
+    const users = await prisma.profile.findMany({
       where,
       select: {
         id: true,

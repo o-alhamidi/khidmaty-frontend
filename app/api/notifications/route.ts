@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     const filter = searchParams.get('filter') || 'all'
 
     const where: any = {}
-    if (userId) where.userId = parseInt(userId)
+    if (userId) where.userId = userId
     if (filter === 'unread') where.read = false
     if (filter === 'read') where.read = true
 
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     const notification = await prisma.notification.create({
       data: {
-        userId: userId ? parseInt(userId) : null,
+        userId: userId ? userId : null,
         type,
         title,
         message,

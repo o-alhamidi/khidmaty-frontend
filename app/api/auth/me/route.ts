@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     const token = authHeader.split(' ')[1]
     const decoded = jwt.verify(token, JWT_SECRET) as any
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.profile.findUnique({
       where: { id: decoded.userId },
       include: { provider: true },
     })

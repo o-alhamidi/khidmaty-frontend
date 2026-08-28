@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Find user
-    const user = await prisma.user.findUnique({
+    const user = await prisma.profile.findUnique({
       where: { email },
       include: { provider: true },
     })
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check password
-    const isValid = await bcrypt.compare(password, user.password)
+    const isValid = !!user.password && await bcrypt.compare(password, user.password)
     if (!isValid) {
       return NextResponse.json(
         { success: false, message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' },
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Update last active
-    await prisma.user.update({
+    await prisma.profile.update({
       where: { id: user.id },
       data: { lastActive: new Date() },
     })

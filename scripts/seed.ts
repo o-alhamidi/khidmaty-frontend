@@ -29,7 +29,7 @@ async function main() {
   console.log(`✅ Created ${categories.count} categories`)
 
   // ==================== ADMIN ====================
-  await prisma.user.create({
+  await prisma.profile.create({
     data: {
       fullName: 'مدير النظام',
       email: 'admin@smart-service.com',
@@ -43,7 +43,7 @@ async function main() {
 
   // ==================== CUSTOMERS ====================
   const customers = await Promise.all([
-    prisma.user.create({
+    prisma.profile.create({
       data: {
         fullName: 'يارا سالم',
         email: 'yara.salem@example.com',
@@ -53,7 +53,7 @@ async function main() {
         status: 'ACTIVE',
       },
     }),
-    prisma.user.create({
+    prisma.profile.create({
       data: {
         fullName: 'أحمد السيد',
         email: 'ahmed.elsayed@example.com',
@@ -63,7 +63,7 @@ async function main() {
         status: 'ACTIVE',
       },
     }),
-    prisma.user.create({
+    prisma.profile.create({
       data: {
         fullName: 'منى حسن',
         email: 'mona.hassan@example.com',
@@ -73,7 +73,7 @@ async function main() {
         status: 'INACTIVE',
       },
     }),
-    prisma.user.create({
+    prisma.profile.create({
       data: {
         fullName: 'فاطمة أحمد',
         email: 'fatima.ahmed@example.com',
@@ -83,7 +83,7 @@ async function main() {
         status: 'ACTIVE',
       },
     }),
-    prisma.user.create({
+    prisma.profile.create({
       data: {
         fullName: 'عمر إبراهيم',
         email: 'omar.ibrahim@example.com',
@@ -93,7 +93,7 @@ async function main() {
         status: 'ACTIVE',
       },
     }),
-    prisma.user.create({
+    prisma.profile.create({
       data: {
         fullName: 'ليلى محمد',
         email: 'layla.mohamed@example.com',
@@ -219,7 +219,7 @@ async function main() {
   ]
 
   for (const p of providerData) {
-    const user = await prisma.user.create({
+    const user = await prisma.profile.create({
       data: {
         fullName: p.name,
         email: p.email,
@@ -238,7 +238,7 @@ async function main() {
             jobsCompleted: p.jobsCompleted,
             earnings: p.earnings,
             verified: p.verified,
-            verificationStatus: p.status as any,
+            status: p.status as any,
             skills: p.skills,
             specialties: p.specialties,
             biography: p.biography,
@@ -263,14 +263,14 @@ async function main() {
   // ==================== NOTIFICATIONS ====================
   await prisma.notification.createMany({
     data: [
-      { type: 'verification', title: 'طلب توثيق جديد', message: 'قدم أحمد حسن (فني كهرباء) وثائق الاعتماد وهو بانتظار الموافقة.', severity: 'WARNING', read: false },
-      { type: 'dispute', title: 'شكوى جديدة', message: 'العميلة يارا سالم قدمت شكوى ضد المزود كريم السيد بخصوص الطلب #4521.', severity: 'CRITICAL', read: false },
-      { type: 'system', title: 'تنبيه أداء النظام', message: 'زادت أوقات استعلام قاعدة البيانات بنسبة 40% في الساعة الماضية.', severity: 'INFO', read: false },
-      { type: 'verification_approved', title: 'تمت الموافقة على توثيق المزود', message: 'تم توثيق منى حسن (سباكة) بنجاح وهي الآن نشطة.', severity: 'SUCCESS', read: true },
-      { type: 'payment', title: 'ضغط عالي في النظام', message: 'قامت المنصة بمعالجة 2,450 حجز اليوم (أعلى من المتوسط بـ 20%).', severity: 'INFO', read: true },
-      { type: 'compliance', title: 'مراجعة الامتثال مطلوبة', message: 'المزودة ليلى محمد لم تكمل المراجعة المطلوبة للامتثال خلال 30 يوماً.', severity: 'WARNING', read: true },
-      { type: 'fraud', title: 'اكتشاف نشاط مشبوه', message: 'تم اكتشاف محاولات دفع فاشلة متعددة من عنوان IP 192.168.1.1.', severity: 'CRITICAL', read: true },
-      { type: 'update', title: 'اكتمل تحديث النظام', message: 'اكتملت صيانة المنصة بنجاح. جميع الأنظمة تعمل بشكل طبيعي ومستقرة.', severity: 'SUCCESS', read: true },
+      { type: 'VERIFICATION', title: 'طلب توثيق جديد', message: 'قدم أحمد حسن (فني كهرباء) وثائق الاعتماد وهو بانتظار الموافقة.', severity: 'WARNING', read: false },
+      { type: 'DISPUTE', title: 'شكوى جديدة', message: 'العميلة يارا سالم قدمت شكوى ضد المزود كريم السيد بخصوص الطلب #4521.', severity: 'CRITICAL', read: false },
+      { type: 'SYSTEM', title: 'تنبيه أداء النظام', message: 'زادت أوقات استعلام قاعدة البيانات بنسبة 40% في الساعة الماضية.', severity: 'INFO', read: false },
+      { type: 'VERIFICATION', title: 'تمت الموافقة على توثيق المزود', message: 'تم توثيق منى حسن (سباكة) بنجاح وهي الآن نشطة.', severity: 'SUCCESS', read: true },
+      { type: 'SYSTEM', title: 'ضغط عالي في النظام', message: 'قامت المنصة بمعالجة 2,450 حجز اليوم (أعلى من المتوسط بـ 20%).', severity: 'INFO', read: true },
+      { type: 'COMPLIANCE', title: 'مراجعة الامتثال مطلوبة', message: 'المزودة ليلى محمد لم تكمل المراجعة المطلوبة للامتثال خلال 30 يوماً.', severity: 'WARNING', read: true },
+      { type: 'FRAUD', title: 'اكتشاف نشاط مشبوه', message: 'تم اكتشاف محاولات دفع فاشلة متعددة من عنوان IP 192.168.1.1.', severity: 'CRITICAL', read: true },
+      { type: 'SYSTEM', title: 'اكتمل تحديث النظام', message: 'اكتملت صيانة المنصة بنجاح. جميع الأنظمة تعمل بشكل طبيعي ومستقرة.', severity: 'SUCCESS', read: true },
     ],
   })
   console.log('✅ Created notifications')

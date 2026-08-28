@@ -14,19 +14,19 @@ export async function GET(req: NextRequest) {
 
     if (search) {
       where.OR = [
-        { user: { fullName: { contains: search, mode: 'insensitive' } } },
-        { user: { email: { contains: search, mode: 'insensitive' } } },
+        { profile: { fullName: { contains: search, mode: 'insensitive' } } },
+        { profile: { email: { contains: search, mode: 'insensitive' } } },
         { specialization: { contains: search, mode: 'insensitive' } },
       ]
     }
 
-    if (status) where.verificationStatus = status
+    if (status) where.status = status
     if (specialization) where.specialization = specialization
 
     const providers = await prisma.provider.findMany({
       where,
       include: {
-        user: {
+        profile: {
           select: {
             id: true,
             fullName: true,

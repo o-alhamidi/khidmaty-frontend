@@ -10,56 +10,69 @@ datasource db {
 
 // المستخدمون (مكمل لـ Supabase Auth)
 model Profile {
-  id            String    @id @default(uuid())
-  userId        String    @unique // رابط مع Supabase Auth user id
-  email         String    @unique
-  fullName      String
-  phone         String?
-  avatarUrl     String?
-  role          Role      @default(CUSTOMER)
-  status        Status    @default(ACTIVE)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id         String    @id @default(uuid())
+  userId     String    @unique @default(uuid()) // رابط مع Supabase Auth user id
+  email      String    @unique
+  password   String?
+  lastActive DateTime?
+  fullName   String
+  phone      String?
+  avatarUrl  String?
+  role       Role      @default(CUSTOMER)
+  status     Status    @default(ACTIVE)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   provider      Provider?
-  bookings      Booking[] @relation("CustomerBookings")
+  bookings      Booking[]      @relation("CustomerBookings")
   reviews       Review[]
   notifications Notification[]
 }
 
 model Provider {
-  id              String   @id @default(uuid())
-  profileId       String   @unique
-  profile         Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  id        String  @id @default(uuid())
+  profileId String  @unique
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  specialization  String
-  location        String
-  experience      String   // 0-2, 2-5, 5-10, 10+
-  certifications  String?
-  bio             String?  @db.Text
-  rating          Float    @default(0)
-  reviewCount     Int      @default(0)
-  earnings        Float    @default(0)
-  jobCount        Int      @default(0)
-  verified        Boolean  @default(false)
-  status          ProviderStatus @default(PENDING)
-  createdAt       DateTime @default(now())
+  specialization String
+  location       String
+  experience     String // 0-2, 2-5, 5-10, 10+
+  certifications String?
+  bio            String?        @db.Text
+  hourlyRate     Float          @default(0)
+  skills         String?
+  specialties    String?
+  biography      String?        @db.Text
+  rating         Float          @default(0)
+  reviewCount    Int            @default(0)
+  reviewsCount   Int            @default(0)
+  earnings       Float          @default(0)
+  jobCount       Int            @default(0)
+  jobsCompleted  Int            @default(0)
+  verified       Boolean        @default(false)
+  status         ProviderStatus @default(PENDING)
+  createdAt      DateTime       @default(now())
 
-  services        Service[]
-  bookings        Booking[] @relation("ProviderBookings")
+  services   Service[]
+  categories Category[]
+  bookings   Booking[]  @relation("ProviderBookings")
 }
 
 model Category {
-  id          String    @id @default(uuid())
-  name        String    @unique
-  nameAr      String
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  nameAr      String   @default("")
   icon        String?
+  color       String?
   description String?
-  featured    Boolean   @default(false)
-  status      Status    @default(ACTIVE)
-  createdAt   DateTime  @default(now())
+  featured    Boolean  @default(false)
+  status      Status   @default(ACTIVE)
+  createdAt   DateTime @default(now())
 
-  services    Service[]
+  services   Service[]
+  provider   Provider? @relation(fields: [providerId], references: [id])
+  providerId String?
 }
 
 model Service {
@@ -74,53 +87,54 @@ model Service {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  categoryId  String
-  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
 
-  providerId  String
-  provider    Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  providerId String
+  provider   Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
-  bookings    Booking[]
-  reviews     Review[]
+  bookings Booking[]
+  reviews  Review[]
 }
 
 model Booking {
-  id          String        @id @default(uuid())
-  status      BookingStatus @default(PENDING)
-  date        DateTime
-  time        String
-  address     String
-  notes       String?
-  totalPrice  Float
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id         String        @id @default(uuid())
+  status     BookingStatus @default(PENDING)
+  date       DateTime
+  time       String
+  address    String
+  notes      String?
+  totalPrice Float
+  tax        Float         @default(0)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
 
-  customerId  String
-  customer    Profile       @relation("CustomerBookings", fields: [customerId], references: [id])
+  customerId String
+  customer   Profile @relation("CustomerBookings", fields: [customerId], references: [id])
 
-  providerId  String
-  provider    Provider      @relation("ProviderBookings", fields: [providerId], references: [id])
+  providerId String
+  provider   Provider @relation("ProviderBookings", fields: [providerId], references: [id])
 
-  serviceId   String
-  service     Service       @relation(fields: [serviceId], references: [id])
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id])
 
-  review      Review?
+  review Review?
 }
 
 model Review {
   id        String   @id @default(uuid())
-  rating    Int      // 1-5
+  rating    Int // 1-5
   comment   String?  @db.Text
   createdAt DateTime @default(now())
 
-  bookingId String   @unique
-  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  bookingId String  @unique
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   customerId String
-  customer   Profile  @relation(fields: [customerId], references: [id])
+  customer   Profile @relation(fields: [customerId], references: [id])
 
-  serviceId  String
-  service    Service  @relation(fields: [serviceId], references: [id])
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id])
 }
 
 model Notification {
@@ -132,8 +146,8 @@ model Notification {
   read      Boolean          @default(false)
   createdAt DateTime         @default(now())
 
-  userId    String
-  user      Profile          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String?
+  user   Profile? @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum Role {

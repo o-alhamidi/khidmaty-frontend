@@ -8,8 +8,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const body = await req.json()
     const { status } = body
 
-    const user = await prisma.user.update({
-      where: { id: parseInt(params.id) },
+    const user = await prisma.profile.update({
+      where: { id: params.id },
       data: { status },
       select: {
         id: true,
@@ -35,8 +35,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    await prisma.user.delete({
-      where: { id: parseInt(params.id) },
+    await prisma.profile.delete({
+      where: { id: params.id },
     })
 
     return NextResponse.json({
