@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Calendar, Clock, MapPin, User, DollarSign, MessageSquare, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -25,6 +26,10 @@ export function BookingForm({ providerId = '1', serviceId = '1' }: BookingFormPr
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [selectedTime, setSelectedTime] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const router = useRouter()
 
   // Mock provider data
   const provider = {
@@ -77,10 +82,44 @@ export function BookingForm({ providerId = '1', serviceId = '1' }: BookingFormPr
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('تم إرسال الطلب:', formData)
-    alert('تم تقديم طلب الحجز بنجاح!')
+    setError('')
+    setSuccess('')
+
+    const token = localStorage.getItem('token')
+    const user = JSON.parse(localStorage.getItem('user') || 'null')
+    if (!token || !user?.id) {
+      router.push('/login')
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          customerId: user.id,
+          providerId,
+          serviceId,
+          ...formData,
+        }),
+      })
+      const result = await response.json()
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'تعذر إنشاء الحجز')
+      }
+      setSuccess('تم إنشاء الحجز بنجاح، وسيظهر في لوحة التحكم.')
+      setTimeout(() => router.push('/dashboard'), 1000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'تعذر إنشاء الحجز، حاول مرة أخرى.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   // Get minimum date (tomorrow)
@@ -239,14 +278,25 @@ export function BookingForm({ providerId = '1', serviceId = '1' }: BookingFormPr
                 </div>
               </Card>
 
+              {error && (
+                <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-700">
+                  {success}
+                </div>
+              )}
+
               {/* Submit Button */}
               <Button
                 type="submit"
                 size="lg"
                 className="w-full"
-                disabled={!formData.date || !selectedTime || !formData.address}
+                disabled={isSubmitting || !formData.date || !selectedTime || !formData.address}
               >
-                المتابعة لإتمام الحجز
+                {isSubmitting ? 'جاري إنشاء الحجز...' : 'المتابعة لإتمام الحجز'}
               </Button>
             </form>
           </div>

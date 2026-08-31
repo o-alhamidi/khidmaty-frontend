@@ -5,7 +5,9 @@ import { BookingForm } from '@/components/booking/booking-form'
 export default function BookingPage({
   params,
 }: {
-  params: { providerId: string; serviceId: string }
+  params: Promise<{ providerId: string; serviceId: string }>
 }) {
-  return <BookingForm providerId={params.providerId} serviceId={params.serviceId} />
+  return params.then(({ providerId, serviceId }) => (
+    <BookingForm providerId={providerId} serviceId={serviceId} />
+  ))
 }
