@@ -47,23 +47,30 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      // محاكاة الاتصال بواجهة برمجة التطبيقات (API)
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, password: formData.password }),
+      });
+      const result = await response.json();
 
-      // عرض تجريبي: توجيه المستخدم إلى لوحة التحكم عند النجاح
-      console.log('[v0] تسجيل الدخول ناجح:', formData);
-      router.push('/dashboard');
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'فشل تسجيل الدخول');
+      }
+
+      localStorage.setItem('token', result.data.token);
+      localStorage.setItem('user', JSON.stringify(result.data.user));
+      router.push(result.data.user.role === 'ADMIN' ? '/admin' : '/dashboard');
     } catch (error) {
-      console.error('[v0] خطأ في تسجيل الدخول:', error);
-      setErrors({ submit: 'فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.' });
+      console.error('خطأ في تسجيل الدخول:', error);
+      setErrors({ submit: error instanceof Error ? error.message : 'فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.' });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSocialLogin = (provider: string) => {
-    console.log('[v0] تسجيل الدخول عبر وسائل التواصل مع:', provider);
-    // تنفيذ منطق تسجيل الدخول عبر وسائل التواصل الاجتماعي
+    setErrors({ submit: `تسجيل الدخول عبر ${provider} غير متاح حاليًا.` });
   };
 
   return (

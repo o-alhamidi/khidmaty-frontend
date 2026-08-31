@@ -98,9 +98,36 @@ function SignupContent() {
     e.preventDefault();
     if (!validateForm()) return;
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    router.push('/dashboard');
-    setIsLoading(false);
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          password: formData.password,
+          role: userType === 'provider' ? 'PROVIDER' : 'CUSTOMER',
+          specialization: formData.specialization,
+          location: formData.location,
+          experience: formData.experience,
+          certifications: formData.certifications,
+        }),
+      });
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'فشل إنشاء الحساب');
+      }
+
+      localStorage.setItem('token', result.data.token);
+      localStorage.setItem('user', JSON.stringify(result.data.user));
+      router.push('/dashboard');
+    } catch (error) {
+      setErrors({ submit: error instanceof Error ? error.message : 'فشل إنشاء الحساب. يرجى المحاولة مرة أخرى.' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSelectType = (type: string) => {
@@ -189,6 +216,12 @@ function SignupContent() {
 
           <PasswordInput id="password" label="كلمة المرور" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} error={errors.password} disabled={isLoading} />
           <PasswordInput id="confirmPassword" label="تأكيد كلمة المرور" value={formData.confirmPassword} onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})} error={errors.confirmPassword} disabled={isLoading} />
+
+          {errors.submit && (
+            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm">
+              {errors.submit}
+            </div>
+          )}
 
           <Button type="submit" disabled={isLoading} className="w-full h-11 text-base">
             {isLoading ? 'جاري الإنشاء...' : 'إنشاء الحساب'}
