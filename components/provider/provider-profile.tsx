@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 type ProviderProfileProps = {
   provider?: {
@@ -23,6 +23,7 @@ type ProviderProfileProps = {
     skills: string[]
     specialties: string[]
   }
+  providerId?: string
 }
 
 const DEFAULT_PROVIDER = {
@@ -42,9 +43,39 @@ const DEFAULT_PROVIDER = {
   specialties: ['تمديدات سكنية', 'تركيبات تجارية', 'أنظمة المنازل الذكية', 'إصلاحات طارئة'],
 }
 
-export function ProviderProfile({ provider = DEFAULT_PROVIDER }: ProviderProfileProps) {
+export function ProviderProfile({ provider = DEFAULT_PROVIDER, providerId }: ProviderProfileProps) {
+  const [remoteProvider, setRemoteProvider] = useState<ProviderProfileProps['provider'] | null>(null)
   const [isFavorited, setIsFavorited] = useState(false)
+
+  useEffect(() => {
+    if (!providerId) return
+    fetch(`/api/providers/${encodeURIComponent(providerId)}`)
+      .then(async (response) => {
+        const result = await response.json()
+        if (!response.ok || !result.success) throw new Error(result.message)
+        const item = result.data
+        const profile = item.profile || {}
+        setRemoteProvider({
+          name: profile.fullName || 'مزود خدمة',
+          role: item.specialization,
+          rating: item.rating || 0,
+          reviews: item.reviewCount || item.reviewsCount || 0,
+          location: item.location,
+          responseTime: 'ساعة تقريبًا',
+          verified: item.verified || item.status === 'VERIFIED',
+          hourlyRate: item.hourlyRate || 0,
+          jobsCompleted: item.jobsCompleted || item.jobCount || 0,
+          yearsExperience: Number.parseInt(item.experience, 10) || 0,
+          biography: item.biography || item.bio || 'لا توجد نبذة متاحة حاليًا.',
+          skills: (item.skills || '').split(',').map((value: string) => value.trim()).filter(Boolean),
+          specialties: (item.specialties || '').split(',').map((value: string) => value.trim()).filter(Boolean),
+        })
+      })
+      .catch(() => undefined)
+  }, [providerId])
+
   const [expandedReview, setExpandedReview] = useState<number | null>(null)
+  const displayProvider = remoteProvider || provider
 
   const reviews = [
     {
@@ -97,8 +128,8 @@ export function ProviderProfile({ provider = DEFAULT_PROVIDER }: ProviderProfile
             {/* Avatar */}
             <div className="flex flex-col gap-4">
               <div className="flex h-32 w-32 items-center justify-center rounded-2xl bg-primary/15 text-5xl font-bold text-primary md:h-40 md:w-40 md:text-6xl">
-                {provider.name.charAt(0)}
-                {provider.name.split(' ')[1]?.charAt(0)}
+                {displayProvider.name.charAt(0)}
+                {displayProvider.name.split(' ')[1]?.charAt(0)}
               </div>
               <Button
                 variant="outline"
@@ -114,44 +145,44 @@ export function ProviderProfile({ provider = DEFAULT_PROVIDER }: ProviderProfile
             {/* Header info */}
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-3xl font-bold md:text-4xl">{provider.name}</h1>
-                {provider.verified && <BadgeCheck className="h-6 w-6 text-primary" />}
+                <h1 className="text-3xl font-bold md:text-4xl">{displayProvider.name}</h1>
+                {displayProvider.verified && <BadgeCheck className="h-6 w-6 text-primary" />}
               </div>
 
-              <p className="mt-1 text-lg text-muted-foreground">{provider.role}</p>
+              <p className="mt-1 text-lg text-muted-foreground">{displayProvider.role}</p>
 
               <div className="mt-4 flex flex-wrap gap-4">
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1 rounded-full bg-amber-500/10 px-3 py-1">
                     <Star className="h-5 w-5 fill-amber-500 text-amber-500" />
-                    <span className="font-semibold text-amber-600">{provider.rating}</span>
-                    <span className="text-sm text-amber-600">({provider.reviews} تقييم)</span>
+                    <span className="font-semibold text-amber-600">{displayProvider.rating}</span>
+                    <span className="text-sm text-amber-600">({displayProvider.reviews} تقييم)</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <MapPin className="h-5 w-5" />
-                  <span>{provider.location}</span>
+                  <span>{displayProvider.location}</span>
                 </div>
 
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Clock className="h-5 w-5" />
-                  <span>يرد خلال {provider.responseTime}</span>
+                  <span>يرد خلال {displayProvider.responseTime}</span>
                 </div>
               </div>
 
               {/* Stats grid */}
               <div className="mt-6 grid grid-cols-3 gap-4 md:gap-6">
                 <div>
-                  <div className="text-2xl font-bold">{provider.jobsCompleted}</div>
+                  <div className="text-2xl font-bold">{displayProvider.jobsCompleted}</div>
                   <div className="text-xs text-muted-foreground md:text-sm">المهام المنجزة</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{provider.yearsExperience}</div>
+                  <div className="text-2xl font-bold">{displayProvider.yearsExperience}</div>
                   <div className="text-xs text-muted-foreground md:text-sm">سنوات الخبرة</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{provider.hourlyRate} ريال</div>
+                  <div className="text-2xl font-bold">{displayProvider.hourlyRate} ريال</div>
                   <div className="text-xs text-muted-foreground md:text-sm">سعر الساعة</div>
                 </div>
               </div>
@@ -189,14 +220,14 @@ export function ProviderProfile({ provider = DEFAULT_PROVIDER }: ProviderProfile
             {/* Biography */}
             <Card className="p-6">
               <h2 className="text-xl font-semibold">نبذة عني</h2>
-              <p className="mt-3 text-muted-foreground leading-relaxed">{provider.biography}</p>
+              <p className="mt-3 text-muted-foreground leading-relaxed">{displayProvider.biography}</p>
             </Card>
 
             {/* Skills */}
             <Card className="p-6">
               <h2 className="text-xl font-semibold">المهارات</h2>
               <div className="mt-4 flex flex-wrap gap-2">
-                {provider.skills.map((skill) => (
+                {displayProvider.skills.map((skill) => (
                   <Badge key={skill} variant="secondary" className="text-sm">
                     {skill}
                   </Badge>
@@ -208,7 +239,7 @@ export function ProviderProfile({ provider = DEFAULT_PROVIDER }: ProviderProfile
             <Card className="p-6">
               <h2 className="text-xl font-semibold">التخصصات الدقيقة</h2>
               <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-                {provider.specialties.map((specialty) => (
+                {displayProvider.specialties.map((specialty) => (
                   <div key={specialty} className="flex items-start gap-3 border-s-2 border-primary/30 ps-4">
                     <div className="mt-1 h-2 w-2 rounded-full bg-primary flex-shrink-0" />
                     <span className="text-muted-foreground">{specialty}</span>
@@ -224,18 +255,18 @@ export function ProviderProfile({ provider = DEFAULT_PROVIDER }: ProviderProfile
             <Card className="p-6">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="flex flex-col items-center justify-center">
-                  <div className="text-5xl font-bold text-primary">{provider.rating}</div>
+                  <div className="text-5xl font-bold text-primary">{displayProvider.rating}</div>
                   <div className="mt-2 flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
                         className={`h-4 w-4 ${
-                          i < Math.round(provider.rating) ? 'fill-amber-500 text-amber-500' : 'text-border'
+                          i < Math.round(displayProvider.rating) ? 'fill-amber-500 text-amber-500' : 'text-border'
                         }`}
                       />
                     ))}
                   </div>
-                  <p className="mt-2 text-sm text-muted-foreground">بناءً على {provider.reviews} تقييم</p>
+                  <p className="mt-2 text-sm text-muted-foreground">بناءً على {displayProvider.reviews} تقييم</p>
                 </div>
 
                 <div className="col-span-1 space-y-2 md:col-span-2">
@@ -343,19 +374,19 @@ export function ProviderProfile({ provider = DEFAULT_PROVIDER }: ProviderProfile
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">سنوات الخبرة</p>
-                    <p className="mt-1 text-lg font-semibold">{provider.yearsExperience} سنوات</p>
+                    <p className="mt-1 text-lg font-semibold">{displayProvider.yearsExperience} سنوات</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">المهام المنجزة</p>
-                    <p className="mt-1 text-lg font-semibold">{provider.jobsCompleted} مهمة</p>
+                    <p className="mt-1 text-lg font-semibold">{displayProvider.jobsCompleted} مهمة</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">سعر الساعة</p>
-                    <p className="mt-1 text-lg font-semibold">{provider.hourlyRate} ريال</p>
+                    <p className="mt-1 text-lg font-semibold">{displayProvider.hourlyRate} ريال</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">سرعة الاستجابة</p>
-                    <p className="mt-1 text-lg font-semibold">{provider.responseTime}</p>
+                    <p className="mt-1 text-lg font-semibold">{displayProvider.responseTime}</p>
                   </div>
                 </div>
               </div>

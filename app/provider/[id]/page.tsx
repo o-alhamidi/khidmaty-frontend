@@ -6,10 +6,15 @@ export const metadata: Metadata = {
   description: 'عرض الملف الشخصي المفصل لمزود الخدمة بما في ذلك التقييمات، المراجعات، المهارات، وأوقات العمل.',
 }
 
-export default function ProviderProfilePage() {
+export default async function ProviderProfilePage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
   return (
     <main>
-      <ProviderProfile />
+      <ProviderProfile providerId={id} />
     </main>
   )
 }
