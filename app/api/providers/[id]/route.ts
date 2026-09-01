@@ -3,6 +3,26 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  try {
+    const provider = await prisma.provider.findUnique({
+      where: { id },
+      include: {
+        profile: { select: { id: true, fullName: true, email: true, phone: true, avatarUrl: true } },
+        categories: true,
+        services: { where: { status: 'ACTIVE' }, orderBy: { createdAt: 'desc' } },
+        bookings: { where: { status: 'COMPLETED' }, select: { id: true, review: true } },
+      },
+    })
+    if (!provider) return NextResponse.json({ success: false, message: 'مزود الخدمة غير موجود' }, { status: 404 })
+    return NextResponse.json({ success: true, data: provider })
+  } catch (error) {
+    console.error('Get provider error:', error)
+    return NextResponse.json({ success: false, message: 'حدث خطأ أثناء جلب ملف المزود' }, { status: 500 })
+  }
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   try {
