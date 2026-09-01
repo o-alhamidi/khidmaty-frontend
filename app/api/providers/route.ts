@@ -37,6 +37,10 @@ export async function GET(req: NextRequest) {
           },
         },
         categories: true,
+        services: {
+          where: { status: 'ACTIVE' },
+          select: { id: true, title: true, description: true, price: true, priceType: true },
+        },
       },
       orderBy: { createdAt: 'desc' },
     })

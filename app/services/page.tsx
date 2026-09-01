@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Sliders, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -31,204 +32,9 @@ type ServiceProvider = {
   verified: boolean
   tone: string
   category: string
+  serviceId?: string
   minRating?: number
 }
-
-const allProviders: ServiceProvider[] = [
-  {
-    id: '1',
-    name: 'كريم السيد',
-    role: 'فني كهرباء محترف',
-    initials: 'ك.س',
-    rating: 4.9,
-    reviews: 312,
-    jobs: 540,
-    location: 'تعز',
-    rate: 2500,
-    tags: ['تمديدات', 'لوحات تحكم', 'منازل ذكية'],
-    responseTime: 'أقل من 15 دقيقة',
-    verified: true,
-    tone: 'from-amber-500/20 to-transparent',
-    category: 'electrical',
-  },
-  {
-    id: '2',
-    name: 'منى حسن',
-    role: 'مهندسة مدنية',
-    initials: 'م.ح',
-    rating: 5.0,
-    reviews: 142,
-    jobs: 86,
-    location: 'صنعاء',
-    rate: 6500,
-    tags: ['فحص مباني', 'ترميم'],
-    responseTime: 'أقل من ساعة',
-    verified: true,
-    tone: 'from-emerald-500/20 to-transparent',
-    category: 'engineering',
-  },
-  {
-    id: '3',
-    name: 'حسام عادل',
-    role: 'أخصائي سباكة',
-    initials: 'ح.ع',
-    rating: 4.8,
-    reviews: 487,
-    jobs: 920,
-    location: 'عدن',
-    rate: 2200,
-    tags: ['تسربات', 'سخانات', 'صرف صحي'],
-    responseTime: 'أقل من 30 دقيقة',
-    verified: true,
-    tone: 'from-sky-500/20 to-transparent',
-    category: 'plumbing',
-  },
-  {
-    id: '4',
-    name: 'سارة إبراهيم',
-    role: 'فنية تكييف وتبريد',
-    initials: 'س.إ',
-    rating: 4.9,
-    reviews: 256,
-    jobs: 410,
-    location: 'تعز',
-    rate: 3200,
-    tags: ['تركيب مكيفات', 'صيانة دورية'],
-    responseTime: 'أقل من 20 دقيقة',
-    verified: true,
-    tone: 'from-cyan-500/20 to-transparent',
-    category: 'hvac',
-  },
-  {
-    id: '5',
-    name: 'أحمد منصور',
-    role: 'نجار مباني وأثاث',
-    initials: 'أ.م',
-    rating: 4.7,
-    reviews: 198,
-    jobs: 312,
-    location: 'إب',
-    rate: 3500,
-    tags: ['أثاث', 'أبواب', 'أرفف'],
-    responseTime: 'أقل من ساعتين',
-    verified: true,
-    tone: 'from-orange-500/20 to-transparent',
-    category: 'carpentry',
-  },
-  {
-    id: '6',
-    name: 'ليلى الرشيد',
-    role: 'أخصائية تنظيف',
-    initials: 'ل.ر',
-    rating: 4.9,
-    reviews: 523,
-    jobs: 1250,
-    location: 'صنعاء',
-    rate: 1800,
-    tags: ['تنظيف عميق', 'تعقيم', 'مواد صديقة للبيئة'],
-    responseTime: 'أقل من ساعة',
-    verified: true,
-    tone: 'from-fuchsia-500/20 to-transparent',
-    category: 'cleaning',
-  },
-  {
-    id: '7',
-    name: 'عمر خالد',
-    role: 'فني شبكات وتقنية',
-    initials: 'ع.خ',
-    rating: 4.6,
-    reviews: 287,
-    jobs: 456,
-    location: 'تعز',
-    rate: 2500,
-    tags: ['شبكات', 'حل أعطال', 'تأسيس'],
-    responseTime: 'أقل من 30 دقيقة',
-    verified: true,
-    tone: 'from-indigo-500/20 to-transparent',
-    category: 'tech',
-  },
-  {
-    id: '8',
-    name: 'فاطمة السيد',
-    role: 'أخصائية دهانات',
-    initials: 'ف.س',
-    rating: 4.8,
-    reviews: 156,
-    jobs: 234,
-    location: 'عدن',
-    rate: 2000,
-    tags: ['داخلي', 'خارجي', 'تشطيبات'],
-    responseTime: 'أقل من 45 دقيقة',
-    verified: true,
-    tone: 'from-rose-500/20 to-transparent',
-    category: 'painting',
-  },
-  {
-    id: '9',
-    name: 'حسن الرشيد',
-    role: 'مختص نقل عفش',
-    initials: 'ح.ر',
-    rating: 4.7,
-    reviews: 112,
-    jobs: 189,
-    location: 'تعز',
-    rate: 4000,
-    tags: ['منازل', 'مكاتب', 'تخزين'],
-    responseTime: 'أقل من ساعتين',
-    verified: true,
-    tone: 'from-yellow-500/20 to-transparent',
-    category: 'moving',
-  },
-  {
-    id: '10',
-    name: 'نادية السيد',
-    role: 'خبيرة تنسيق حدائق',
-    initials: 'ن.س',
-    rating: 4.9,
-    reviews: 89,
-    jobs: 156,
-    location: 'صنعاء',
-    rate: 2200,
-    tags: ['تنسيق', 'صيانة', 'تصميم'],
-    responseTime: 'أقل من ساعة',
-    verified: true,
-    tone: 'from-green-500/20 to-transparent',
-    category: 'gardening',
-  },
-  {
-    id: '11',
-    name: 'محمد سمير',
-    role: 'فني أقفال ومفاتيح',
-    initials: 'م.س',
-    rating: 4.6,
-    reviews: 78,
-    jobs: 124,
-    location: 'إب',
-    rate: 1500,
-    tags: ['طوارئ', 'تركيب', 'إصلاح'],
-    responseTime: 'أقل من 20 دقيقة',
-    verified: true,
-    tone: 'from-slate-500/20 to-transparent',
-    category: 'locksmith',
-  },
-  {
-    id: '12',
-    name: 'أمير حسن',
-    role: 'خبير أنظمة أمنية',
-    initials: 'أ.ح',
-    rating: 4.8,
-    reviews: 134,
-    jobs: 267,
-    location: 'عدن',
-    rate: 5000,
-    tags: ['كاميرات', 'أجهزة إنذار', 'مراقبة'],
-    responseTime: 'أقل من ساعة',
-    verified: true,
-    tone: 'from-red-500/20 to-transparent',
-    category: 'security',
-  },
-] 
-
 
 export default function ServicesPage() {
   const [searchQuery, setSearchQuery] = React.useState('')
@@ -236,6 +42,42 @@ export default function ServicesPage() {
   const [selectedRating, setSelectedRating] = React.useState(0)
   const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null)
   const [sortBy, setSortBy] = React.useState('relevance')
+  const [allProviders, setAllProviders] = React.useState<ServiceProvider[]>([])
+  const [isLoading, setIsLoading] = React.useState(true)
+  const [loadError, setLoadError] = React.useState('')
+  const router = useRouter()
+
+  React.useEffect(() => {
+    fetch('/api/providers?status=VERIFIED')
+      .then(async (response) => {
+        const result = await response.json()
+        if (!response.ok || !result.success) throw new Error(result.message)
+        const providers = result.data.map((item: any) => {
+          const profile = item.profile || {}
+          const category = item.categories?.[0]
+          return {
+            id: item.id,
+            serviceId: item.services?.[0]?.id,
+            name: profile.fullName || 'مزود خدمة',
+            role: item.specialization,
+            initials: (profile.fullName || 'م خ').slice(0, 2),
+            rating: item.rating || 0,
+            reviews: item.reviewCount || item.reviewsCount || 0,
+            jobs: item.jobCount || item.jobsCompleted || 0,
+            location: item.location,
+            rate: item.hourlyRate || 0,
+            tags: (item.skills || item.specialties || '').split(',').map((tag: string) => tag.trim()).filter(Boolean),
+            responseTime: 'يرد خلال ساعة',
+            verified: item.verified || item.status === 'VERIFIED',
+            tone: 'from-primary/20 to-transparent',
+            category: category?.slug || '',
+          } satisfies ServiceProvider
+        })
+        setAllProviders(providers)
+      })
+      .catch((error) => setLoadError(error instanceof Error ? error.message : 'تعذر جلب مزودي الخدمة'))
+      .finally(() => setIsLoading(false))
+  }, [])
 
   // Filter providers
   const filteredProviders = React.useMemo(() => {
@@ -379,14 +221,18 @@ export default function ServicesPage() {
             </div>
 
             {/* Service cards grid */}
-            {filteredProviders.length > 0 ? (
+            {isLoading ? (
+              <div className="rounded-lg border border-border bg-secondary/30 p-12 text-center text-muted-foreground">جاري تحميل مزودي الخدمة...</div>
+            ) : loadError ? (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-12 text-center text-destructive">{loadError}</div>
+            ) : filteredProviders.length > 0 ? (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {filteredProviders.map((provider) => (
                   <ServiceCard
                     key={provider.id}
                     provider={provider}
-                    onBook={() => alert(`حجز ${provider.name}...`)}
-                    onFavorite={() => alert(`تمت إضافة ${provider.name} إلى المفضلة`)}
+                    onBook={() => provider.serviceId && router.push(`/booking/${provider.id}/${provider.serviceId}`)}
+                    onFavorite={() => {}}
                   />
                 ))}
               </div>
