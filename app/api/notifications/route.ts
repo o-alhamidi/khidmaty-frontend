@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { isAdmin } from '@/lib/server-auth'
 
 const prisma = new PrismaClient()
 
@@ -36,6 +37,7 @@ export async function GET(req: NextRequest) {
 // POST create notification
 export async function POST(req: NextRequest) {
   try {
+    if (!isAdmin(req)) return NextResponse.json({ success: false, message: 'غير مصرح' }, { status: 403 })
     const body = await req.json()
     const { userId, type, title, message, severity } = body
 

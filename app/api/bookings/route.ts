@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { getAuthenticatedUser } from '@/lib/server-auth'
 
 const prisma = new PrismaClient()
 
@@ -53,6 +54,11 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const { customerId, providerId, serviceId, date, time, address, notes } = body
+    const authenticatedUser = getAuthenticatedUser(req)
+
+    if (!authenticatedUser || (authenticatedUser.userId !== customerId && authenticatedUser.role !== 'ADMIN')) {
+      return NextResponse.json({ success: false, message: 'غير مصرح بإنشاء هذا الحجز' }, { status: 403 })
+    }
 
     if (!customerId || !providerId || !serviceId || !date || !time || !address) {
       return NextResponse.json(
