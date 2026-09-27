@@ -1,0 +1,2 @@
+import { NextRequest,NextResponse } from 'next/server';import { prisma } from '@/lib/prisma';import { getAuthenticatedUser } from '@/lib/server-auth'
+export async function POST(req:NextRequest){const u=getAuthenticatedUser(req);if(!u)return NextResponse.json({success:false,message:'غير مصرح'},{status:401});await prisma.notification.updateMany({where:{read:false,userId:u.role==='ADMIN'?undefined:u.userId},data:{read:true}});return NextResponse.json({success:true})}
